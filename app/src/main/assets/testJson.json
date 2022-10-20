@@ -1,0 +1,17 @@
+{
+  "resultCode": "200",
+  "reason": "successed!",
+  "result": [
+    {
+      "temperature": "19℃~29℃",
+      "weather": "多云",
+      "wind": "北风微风",
+      "week": "星期五",
+      "bool": true,
+      "aDouble": 1.0,
+      "aLong": 1234,
+      "aInt": 2,
+      "date": "20151002"
+    }
+  ]
+}
