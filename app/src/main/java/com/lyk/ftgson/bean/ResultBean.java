@@ -14,6 +14,7 @@ public class ResultBean implements Serializable {
     private String week;
     private boolean bool;
     private double aDouble;
+    private float aFloat;
     private long aLong;
     private int aInt;
     private int date;
@@ -27,6 +28,7 @@ public class ResultBean implements Serializable {
                 "\n\n, week='" + week + '\'' +
                 "\n\n, bool='" + bool + '\'' +
                 "\n\n, aDouble='" + aDouble + '\'' +
+                "\n\n, aFloat='" + aFloat + '\'' +
                 "\n\n, aLong='" + aLong + '\'' +
                 "\n\n, aInt='" + aInt + '\'' +
                 "\n\n, date=" + date +

@@ -146,6 +146,11 @@ public final class Gson {
   private static final String JSON_NON_EXECUTABLE_PREFIX = ")]}'\n";
 
   /**
+   * 是否使用gson解析严格模式，模式不适用会兼容各种数据不匹配
+   */
+  public static boolean StrictMode = false;
+
+  /**
    * This thread local guards against reentrant calls to getAdapter(). In
    * certain object graphs, creating an adapter for a type may recursively
    * require an adapter for the same type! Without intervention, the recursive

@@ -76,6 +76,13 @@ public final class CollectionTypeAdapterFactory implements TypeAdapterFactory {
         return null;
       }
 
+      if (!Gson.StrictMode) {
+        if (in.peek() != JsonToken.BEGIN_ARRAY){
+          in.skipValue();
+          return null;
+        }
+      }
+
       Collection<E> collection = constructor.construct();
       in.beginArray();
       while (in.hasNext()) {

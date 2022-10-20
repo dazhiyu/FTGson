@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 TestBean bean = gson.fromJson(jsonEt.getText().toString().trim(), TestBean.class);
                 gsonTv.setText(bean.toString());
             } catch (Exception e) {
+                e.printStackTrace();
                 gsonTv.setText(e.toString());
             }
         });

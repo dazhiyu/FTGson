@@ -9,6 +9,7 @@
       "week": "星期五",
       "bool": true,
       "aDouble": 1.0,
+      "aFloat": 2.0,
       "aLong": 1234,
       "aInt": 2,
       "date": "20151002"

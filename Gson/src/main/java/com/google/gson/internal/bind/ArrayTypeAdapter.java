@@ -66,6 +66,13 @@ public final class ArrayTypeAdapter<E> extends TypeAdapter<Object> {
       return null;
     }
 
+    if (!Gson.StrictMode) {
+      if (in.peek() != JsonToken.BEGIN_ARRAY){
+        in.skipValue();
+        return null;
+      }
+    }
+
     List<E> list = new ArrayList<>();
     in.beginArray();
     while (in.hasNext()) {

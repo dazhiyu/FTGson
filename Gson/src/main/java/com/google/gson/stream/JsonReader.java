@@ -16,6 +16,7 @@
 
 package com.google.gson.stream;
 
+import com.google.gson.Gson;
 import com.google.gson.internal.JsonReaderInternalAccess;
 import com.google.gson.internal.bind.JsonTreeReader;
 import java.io.Closeable;
@@ -227,6 +228,11 @@ public class JsonReader implements Closeable {
 
   /** True to accept non-spec compliant JSON */
   private boolean lenient = false;
+
+  /**
+   * 是否处于容错模式
+   */
+  private boolean StrictMode = Gson.StrictMode;
 
   static final int BUFFER_SIZE = 1024;
   /**
@@ -832,7 +838,12 @@ public class JsonReader implements Closeable {
       result = new String(buffer, pos, peekedNumberLength);
       pos += peekedNumberLength;
     } else {
-      throw new IllegalStateException("Expected a string but was " + peek() + locationString());
+      if (StrictMode) {
+        throw new IllegalStateException("Expected a string but was " + peek() + locationString());
+      }
+      // 需要跳过才可以容错数组或对象类型
+      skipValue();
+      result = "";
     }
     peeked = PEEKED_NONE;
     pathIndices[stackSize - 1]++;
@@ -860,7 +871,16 @@ public class JsonReader implements Closeable {
       pathIndices[stackSize - 1]++;
       return false;
     }
-    throw new IllegalStateException("Expected a boolean but was " + peek() + locationString());
+
+    if (StrictMode) {
+      throw new IllegalStateException("Expected a boolean but was " + peek() + locationString());
+    }
+    // 需要跳过才可以容错数组或对象类型
+    skipValue();
+
+    peeked = PEEKED_NONE;
+    pathIndices[stackSize - 1]++;
+    return false;
   }
 
   /**
@@ -912,11 +932,24 @@ public class JsonReader implements Closeable {
     } else if (p == PEEKED_UNQUOTED) {
       peekedString = nextUnquotedValue();
     } else if (p != PEEKED_BUFFERED) {
-      throw new IllegalStateException("Expected a double but was " + peek() + locationString());
+      if (StrictMode) {
+        throw new IllegalStateException("Expected a double but was " + peek() + locationString());
+      }
+      // 需要跳过才可以容错数组或对象类型
+      skipValue();
+      peekedString = "0";
     }
 
     peeked = PEEKED_BUFFERED;
-    double result = Double.parseDouble(peekedString);
+    double result;
+    try {
+      result = Double.parseDouble(peekedString);
+    } catch (NumberFormatException e) {
+      if (StrictMode) {
+        throw e;
+      }
+      result = 0;
+    }
     if (!lenient && (Double.isNaN(result) || Double.isInfinite(result))) {
       throw new MalformedJsonException(
           "JSON forbids NaN and infinities: " + result + locationString());
@@ -967,11 +1000,24 @@ public class JsonReader implements Closeable {
         // Fall back to parse as a double below.
       }
     } else {
-      throw new IllegalStateException("Expected a long but was " + peek() + locationString());
+      if (StrictMode) {
+        throw new IllegalStateException("Expected a long but was " + peek() + locationString());
+      }
+      // 需要执行跳过才可以容错数组或对象类型
+      skipValue();
+      peekedString = "0";
     }
 
     peeked = PEEKED_BUFFERED;
-    double asDouble = Double.parseDouble(peekedString);
+    double asDouble;
+    try {
+      asDouble = Double.parseDouble(peekedString);
+    } catch (NumberFormatException e) {
+      if (StrictMode) {
+        throw e;
+      }
+      asDouble = 0;
+    }
     long result = (long) asDouble;
     if (result != asDouble) { // Make sure no precision was lost casting to 'long'.
       throw new NumberFormatException("Expected a long but was " + peekedString + locationString());
@@ -1179,7 +1225,12 @@ public class JsonReader implements Closeable {
     if (p == PEEKED_LONG) {
       result = (int) peekedLong;
       if (peekedLong != result) { // Make sure no precision was lost casting to 'int'.
-        throw new NumberFormatException("Expected an int but was " + peekedLong + locationString());
+        NumberFormatException exception = new NumberFormatException("Expected an int but was " + peekedLong + locationString());
+        if (StrictMode) {
+          throw exception;
+        } else {
+          exception.printStackTrace();
+        }
       }
       peeked = PEEKED_NONE;
       pathIndices[stackSize - 1]++;
@@ -1204,14 +1255,32 @@ public class JsonReader implements Closeable {
         // Fall back to parse as a double below.
       }
     } else {
-      throw new IllegalStateException("Expected an int but was " + peek() + locationString());
+      if (StrictMode) {
+        throw new IllegalStateException("Expected an int but was " + peek() + locationString());
+      }
+      // 需要跳过才可以容错数组或对象类型
+      skipValue();
+      peekedString = "0";
     }
 
     peeked = PEEKED_BUFFERED;
-    double asDouble = Double.parseDouble(peekedString);
+    double asDouble;
+    try {
+      asDouble = Double.parseDouble(peekedString);
+    } catch (NumberFormatException e) {
+      if (StrictMode) {
+        throw e;
+      }
+      asDouble = 0;
+    }
     result = (int) asDouble;
     if (result != asDouble) { // Make sure no precision was lost casting to 'int'.
-      throw new NumberFormatException("Expected an int but was " + peekedString + locationString());
+      NumberFormatException exception = new NumberFormatException("Expected an int but was " + peekedString + locationString());
+      if (StrictMode) {
+        throw exception;
+      } else {
+        exception.printStackTrace();
+      }
     }
     peekedString = null;
     peeked = PEEKED_NONE;

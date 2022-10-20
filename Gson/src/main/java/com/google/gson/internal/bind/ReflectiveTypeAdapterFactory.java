@@ -253,6 +253,13 @@ public final class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
         return null;
       }
 
+      if (!Gson.StrictMode) {
+        if (in.peek() != JsonToken.BEGIN_OBJECT) {
+          in.skipValue();
+          return null;
+        }
+      }
+
       T instance = constructor.construct();
 
       try {

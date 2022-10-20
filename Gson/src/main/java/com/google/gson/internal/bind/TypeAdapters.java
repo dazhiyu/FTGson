@@ -365,8 +365,13 @@ public final class TypeAdapters {
         return null;
       }
       String str = in.nextString();
-      if (str.length() != 1) {
-        throw new JsonSyntaxException("Expecting character, got: " + str + "; at " + in.getPreviousPath());
+      if(Gson.StrictMode){
+        if (str.length() != 1) {
+          throw new JsonSyntaxException("Expecting character, got: " + str + "; at " + in.getPreviousPath());
+        }
+      }
+      if(str == null || str.length() == 0){
+        return '0';
       }
       return str.charAt(0);
     }
